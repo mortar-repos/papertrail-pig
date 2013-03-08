@@ -14,16 +14,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
-/**
- *
- */
+
 public class TestPapertrailLoader {
 
     static PigServer pig;
 
     private static final String dataDir = "build/test/tmpdata/";
-    private static final String jsonInput = "papertrail_loader_json_input";
-    private static final String stringInput = " papertrail_loader_json_input";
+    private static final String input1 = "papertrail_loader_input1";
+    private static final String input2 = " papertrail_loader_input2";
 
     @Before
     public void setup() throws IOException {
@@ -33,13 +31,13 @@ public class TestPapertrailLoader {
         try {
             pig.mkdirs(dataDir);
 
-            Util.createLocalInputFile(dataDir + jsonInput,
+            Util.createLocalInputFile(dataDir + input1,
                     new String[] {
                             "{243216549875413584\t2013-02-27T00:00:06Z\t2013-02-27T00:00:06Z\t1568461\tgrgdret3452342\t35.354.58.844\tUser\tInfo\trequest{\"AUTH_TYPE\"\t\"cookie\", \"HTTP_REFERER\": \"https://efaahefewfadsfwefewff.com\", \"pid\": 4521, \"SCRIPT_NAME\": \"\", \"REQUEST_METHOD\": \"GET\", \"PATH_INFO\": \"/api/do_stuff\", \"SERVER_PROTOCOL\": \"HTTP/1.1\", \"QUERY_STRING\": \"\", \"CONTENT_LENGTH\": null, \"HTTP_USER_AGENT\": \"fagjgsdlfgowegwekgewgf\", \"user_id\": \"8458vse8fr13518631\", \"SERVER_NAME\": \"blah.foo.com\", \"REMOTE_ADDR\": \"10.245.54.23\", \"hostname\": \"mhg5ruhgjh\", \"SERVER_PORT\": \"443\", \"timestamp\": \"2013-02-27T00:00:05.163509+00:00\", \"controller\": \"api\", \"HTTP_HOST\": \";lkjhgfdfgjhk\", \"thread\": \"Dummy-4\", \"HTTP_X_FORWARDED_FOR\": \"15.25.356.32\", \"action\": \"get_alerts\", \"X_FORWARDED_FOR\": null}}",
                             "{674329857239442343\t2013-02-27T11:22:22Z\t2013-02-27T03:22:22Z\t3254123\tjgerge44332532\t157.54.878.45\tUser\tNotice\trequest{\"AUTH_TYPE\"\tnull, \"HTTP_REFERER\": null, \"pid\": 15784, \"SCRIPT_NAME\": \"\", \"REQUEST_METHOD\": \"GET\", \"PATH_INFO\": \"/login\", \"SERVER_PROTOCOL\": \"HTTP/1.1\", \"QUERY_STRING\": \"\", \"CONTENT_LENGTH\": null, \"HTTP_USER_AGENT\": \"fedghjkh/1.0\", \"user_id\": null, \"SERVER_NAME\": \"10.245.543.25\", \"REMOTE_ADDR\": \"15.544.54.65\", \"hostname\": \"web565435\", \"SERVER_PORT\": \"443\", \"timestamp\": \"2013-02-27T03:22:22.738540+00:00\", \"controller\": \"login\", \"HTTP_HOST\": \"12.264.256.25\", \"thread\": \"MainThread\", \"HTTP_X_FORWARDED_FOR\": null, \"action\": \"index\", \"X_FORWARDED_FOR\": null}}"
                     });
 
-            Util.createLocalInputFile(dataDir + stringInput,
+            Util.createLocalInputFile(dataDir + input2,
                     new String[] {
                             "{164154641378641312\t2013-02-27T23:59:52Z\t2013-02-28T00:00:00Z\t13545\terfghjgvdf-sdfsdfd\tXX.XX.XXX.XXX\tUser\tInfo\tffheufw/wrdfs.2\t[api] Requested: {\"method\":\"GET\",\"path\":\"/api/fewfqweq/fdqwfqwfr/qwrwqe\",\"query\":\"size=3&cursor=445wr34fsdfsd%tgrergvcwe\"}}",
                             "{954123787415443553\t2013-02-27T23:59:54Z\t2013-02-28T00:00:00Z\t13511\terefre-derew\tXX.XX.XXX.XXX\tUser\tInfo\tdefwe/wew.2\t[api] qdwsfgwrgaetwg. app/sdwqfasdasdasdxs.rb:10 (pid:232)}",
@@ -58,7 +56,7 @@ public class TestPapertrailLoader {
     @Test
     public void jsonTypes() throws IOException {
         pig.registerQuery(
-                "data = load '" + dataDir + jsonInput + "' " +
+                "data = load '" + dataDir + input1 + "' " +
                         "using com.mortardata.pig.PapertrailLoader();"
         );
 
@@ -74,7 +72,7 @@ public class TestPapertrailLoader {
     @Test
     public void stringTypes() throws IOException {
         pig.registerQuery(
-                "data = load '" + dataDir + stringInput + "' " +
+                "data = load '" + dataDir + input2 + "' " +
                         "using com.mortardata.pig.PapertrailLoader();"
         );
 
@@ -91,7 +89,7 @@ public class TestPapertrailLoader {
     @Test
     public void pushProjection() throws IOException {
         pig.registerQuery(
-                "data = load '" + dataDir + jsonInput + "' " +
+                "data = load '" + dataDir + input1 + "' " +
                         "using com.mortardata.pig.PapertrailLoader();"
         );
 

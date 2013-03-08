@@ -34,7 +34,17 @@ import static org.apache.pig.ResourceSchema.ResourceFieldSchema;
 import static org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 
 /**
- *
+ * A loader for Papertrail Logs that assumes the default tab-separated schema of:
+ *  id
+ *  generated_at
+ *  source_id
+ *  source_name
+ *  source_ip
+ *  facility_name
+ *  severity_name
+ *  message
+ * where anything that occurs after severity_name is considered to be part of message,
+ * and tabs are preserved within the message.   Takes no schema because schema is assumed.
  */
 public class PapertrailLoader extends LoadFunc implements LoadMetadata, LoadPushDown {
 
@@ -46,7 +56,6 @@ public class PapertrailLoader extends LoadFunc implements LoadMetadata, LoadPush
     private boolean requiredFieldsInitialized = false;
     private String udfContextSignature = null;
     private static final String REQUIRED_FIELDS_SIGNATURE = "pig.papertrailloader.required_fields";
-    protected ResourceSchema schema = null;
 
     public PapertrailLoader() {
         fields = getSchema().getFields();
@@ -153,6 +162,11 @@ public class PapertrailLoader extends LoadFunc implements LoadMetadata, LoadPush
 
     public List<OperatorSet> getFeatures() {
         return Arrays.asList(LoadPushDown.OperatorSet.PROJECTION);
+    }
+
+    @Override
+    public void setUDFContextSignature( String signature ) {
+        udfContextSignature = signature;
     }
 
     public RequiredFieldResponse pushProjection(RequiredFieldList requiredFieldList) throws FrontendException {
