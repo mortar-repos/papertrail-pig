@@ -1,5 +1,10 @@
 package com.mortardata.pig;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Job;
@@ -15,9 +20,12 @@ import org.apache.pig.ResourceSchema;
 import org.apache.pig.ResourceStatistics;
 import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.backend.hadoop.executionengine.mapReduceLayer.PigSplit;
+import org.apache.pig.backend.hadoop.executionengine.mapReduceLayer.PigTextInputFormat;
+import org.apache.pig.bzip2r.Bzip2TextInputFormat;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
+import org.apache.pig.impl.PigContext;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.util.ObjectSerializer;
@@ -57,18 +65,58 @@ public class PapertrailLoader extends LoadFunc implements LoadMetadata, LoadPush
     private String udfContextSignature = null;
     private static final String REQUIRED_FIELDS_SIGNATURE = "pig.papertrailloader.required_fields";
 
+    private final static Options validOptions_ = new Options();
+    private final static CommandLineParser parser_ = new GnuParser();
+    private String inputFormatClassName = null;
+    private String loadLocation;
+
     public PapertrailLoader() {
+        this("");
+    }
+
+    public PapertrailLoader(String optStr) {
+        populateValidOptions();
+        String[] optsArr = optStr.split(" ");
+        try {
+            CommandLine configuredOptions_ = parser_.parse(validOptions_, optsArr);
+            if (configuredOptions_.getOptionValue("inputFormat") != null) {
+                this.inputFormatClassName = configuredOptions_.getOptionValue("inputFormat");
+            }
+        } catch (org.apache.commons.cli.ParseException e) {
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp( "[-inputFormat]", validOptions_ );
+            throw new RuntimeException(e);
+        }
         fields = getSchema().getFields();
+    }
+
+
+    private static void populateValidOptions() {
+        validOptions_.addOption("inputFormat", true, "The input format class name" +
+                " used by this loader instance");
     }
 
     @Override
     public void setLocation(String location, Job job) throws IOException {
+        loadLocation = location;
         FileInputFormat.setInputPaths(job, location);
     }
 
     @Override
     public InputFormat getInputFormat() throws IOException {
-        return new TextInputFormat();
+        // if not manually set in options string
+        if (inputFormatClassName == null) {
+            if(loadLocation.endsWith(".bz2") || loadLocation.endsWith(".bz")) {
+                return new Bzip2TextInputFormat();
+            } else {
+                return new PigTextInputFormat();
+            }
+        }
+        try {
+            return (FileInputFormat) PigContext.resolveClassName(inputFormatClassName).newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed creating input format " + inputFormatClassName, e);
+        }
     }
 
     @Override

@@ -86,6 +86,39 @@ public class TestPapertrailLoader {
 
     }
 
+
+    @Test
+    public void inputFormatOptionDefaultInputFormat() throws IOException {
+        pig.registerQuery(
+                "data = load '" + dataDir + input2 + "' " +
+                        "using com.mortardata.pig.PapertrailLoader('');"
+        );
+
+        Iterator<Tuple> data = pig.openIterator("data");
+        String[] expected = {
+                "({164154641378641312,2013-02-27T23:59:52Z,2013-02-28T00:00:00Z,13545,erfghjgvdf-sdfsdfd,XX.XX.XXX.XXX,User,Info,ffheufw/wrdfs.2\t[api] Requested: {\"method\":\"GET\",\"path\":\"/api/fewfqweq/fdqwfqwfr/qwrwqe\",\"query\":\"size=3&cursor=445wr34fsdfsd%tgrergvcwe\"}})",
+                "({954123787415443553,2013-02-27T23:59:54Z,2013-02-28T00:00:00Z,13511,erefre-derew,XX.XX.XXX.XXX,User,Info,defwe/wew.2\t[api] qdwsfgwrgaetwg. app/sdwqfasdasdasdxs.rb:10 (pid:232)})",
+                "({454154621513584656,2013-02-28T00:00:00Z,2013-02-28T00:00:00Z,44531,dwewfew-fewwf,XX.XX.XXX.XXX,User,Info,dsfee/cds.3\tStarted GET \"/api/dasdadwfwf\" for XX.XX.XXX.XXX at 2013-02-28 00:00:00 +0000})"
+        };
+        Assert.assertEquals(StringUtils.join(expected, "\n"), StringUtils.join(data, "\n"));
+    }
+
+    @Test
+    public void inputFormatOptionTextInputFormat() throws IOException {
+        pig.registerQuery(
+                "data = load '" + dataDir + input2 + "' " +
+                        "using com.mortardata.pig.PapertrailLoader('-inputFormat org.apache.hadoop.mapreduce.lib.input.TextInputFormat');"
+        );
+
+        Iterator<Tuple> data = pig.openIterator("data");
+        String[] expected = {
+                "({164154641378641312,2013-02-27T23:59:52Z,2013-02-28T00:00:00Z,13545,erfghjgvdf-sdfsdfd,XX.XX.XXX.XXX,User,Info,ffheufw/wrdfs.2\t[api] Requested: {\"method\":\"GET\",\"path\":\"/api/fewfqweq/fdqwfqwfr/qwrwqe\",\"query\":\"size=3&cursor=445wr34fsdfsd%tgrergvcwe\"}})",
+                "({954123787415443553,2013-02-27T23:59:54Z,2013-02-28T00:00:00Z,13511,erefre-derew,XX.XX.XXX.XXX,User,Info,defwe/wew.2\t[api] qdwsfgwrgaetwg. app/sdwqfasdasdasdxs.rb:10 (pid:232)})",
+                "({454154621513584656,2013-02-28T00:00:00Z,2013-02-28T00:00:00Z,44531,dwewfew-fewwf,XX.XX.XXX.XXX,User,Info,dsfee/cds.3\tStarted GET \"/api/dasdadwfwf\" for XX.XX.XXX.XXX at 2013-02-28 00:00:00 +0000})"
+        };
+        Assert.assertEquals(StringUtils.join(expected, "\n"), StringUtils.join(data, "\n"));
+    }
+
     @Test
     public void pushProjection() throws IOException {
         pig.registerQuery(
